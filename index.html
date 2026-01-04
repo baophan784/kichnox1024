@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>System Initializing</title>
+
+<style>
+:root {
+    --main: #00ffcc;
+    --done: #00ff66;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at center, #0f2027, #000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Consolas, monospace;
+    color: var(--main);
+    overflow: hidden;
+}
+
+/* scanline */
+body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.03),
+        rgba(255,255,255,0.03) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+}
+
+/* text typing */
+#typing {
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px var(--main);
+    min-height: 32px;
+}
+
+/* progress bar */
+.progress {
+    margin-top: 30px;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--main), #00ffaa);
+    transition: width 0.15s linear;
+}
+
+/* done text */
+#done {
+    margin-top: 24px;
+    font-size: 26px;
+    color: var(--done);
+    opacity: 0;
+    visibility: hidden;
+}
+
+#done.show {
+    opacity: 1;
+    visibility: visible;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1 }
+    50% { opacity: .4 }
+    100% { opacity: 1 }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div id="typing"></div>
+
+    <div class="progress">
+        <div class="progress-bar" id="bar"></div>
+    </div>
+
+    <div id="done">✔ HOÀN TẤT</div>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const TEXT = "CHƯƠNG TRÌNH KÍCH NỔ HŨ ĐANG ĐƯỢC BẮT ĐẦU...";
+const REDIRECT_URL = "https://m.fly88e.vip/?id=408666291";
+const TYPE_SPEED = 55;
+const DONE_DELAY = 1500;
+
+/* ===== ELEMENT ===== */
+const typingEl = document.getElementById("typing");
+const barEl = document.getElementById("bar");
+const doneEl = document.getElementById("done");
+
+/* ===== TYPING ===== */
+let index = 0;
+
+const typeInterval = setInterval(() => {
+    typingEl.textContent += TEXT[index];
+    index++;
+
+    // progress theo chữ
+    barEl.style.width = Math.floor((index / TEXT.length) * 100) + "%";
+
+    if (index >= TEXT.length) {
+        clearInterval(typeInterval);
+
+        // đảm bảo progress đầy 100%
+        barEl.style.width = "100%";
+
+        // ⏱️ CHỜ 1.5s SAU KHI GÕ XONG
+        setTimeout(() => {
+            doneEl.classList.add("show");
+
+            // redirect sau khi hoàn tất
+            setTimeout(() => {
+                window.location.replace(REDIRECT_URL);
+            }, 1200);
+
+        }, DONE_DELAY);
+    }
+}, TYPE_SPEED);
+</script>
+
+</body>
+</html>
