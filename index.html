@@ -2,94 +2,101 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>System Initializing</title>
+<title>AI Prediction System</title>
 
 <style>
 :root {
-    --main: #00ffcc;
-    --done: #00ff66;
+    --primary: #00e5a8;
+    --accent: #00ff66;
+    --bg1: #0d1117;
+    --bg2: #161b22;
+    --text: #c9d1d9;
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
     height: 100vh;
-    background: radial-gradient(circle at center, #0f2027, #000);
+    background: linear-gradient(135deg, var(--bg1), var(--bg2));
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: Consolas, monospace;
-    color: var(--main);
-    overflow: hidden;
-}
-
-/* scanline */
-body::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,0.03),
-        rgba(255,255,255,0.03) 1px,
-        transparent 1px,
-        transparent 3px
-    );
-    pointer-events: none;
+    font-family: "Inter", Arial, sans-serif;
+    color: var(--text);
 }
 
 .container {
     width: 90%;
-    max-width: 600px;
+    max-width: 520px;
     text-align: center;
 }
 
-/* text typing */
-#typing {
-    font-size: 20px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 12px var(--main);
-    min-height: 32px;
+.logo {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+    color: var(--primary);
 }
 
-/* progress bar */
+.status {
+    font-size: 18px;
+    margin-bottom: 22px;
+}
+
 .progress {
-    margin-top: 30px;
-    height: 6px;
+    height: 8px;
     background: rgba(255,255,255,0.1);
-    overflow: hidden;
     border-radius: 10px;
+    overflow: hidden;
 }
-
-.progress-bar {
-    width: 0%;
+.bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--main), #00ffaa);
-    transition: width 0.15s linear;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width .2s linear;
 }
 
-/* done text */
-#done {
-    margin-top: 24px;
-    font-size: 26px;
-    color: var(--done);
+.promo {
+    margin-top: 28px;
+    font-size: 17px;
+    font-weight: 500;
     opacity: 0;
-    visibility: hidden;
+    transition: .5s;
 }
 
-#done.show {
-    opacity: 1;
-    visibility: visible;
-    animation: pulse 1s infinite;
+.badges {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    transition: .6s;
+}
+.badge {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
-@keyframes pulse {
-    0% { opacity: 1 }
-    50% { opacity: .4 }
-    100% { opacity: 1 }
+.btn {
+    margin-top: 24px;
+    padding: 12px 18px;
+    font-size: 16px;
+    background: var(--primary);
+    border-radius: 8px;
+    color: #000;
+    cursor: pointer;
+    opacity: 0;
+    transition: .4s;
+    font-weight: 600;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
 }
 </style>
 </head>
@@ -97,55 +104,55 @@ body::after {
 <body>
 
 <div class="container">
-    <div id="typing"></div>
+    <div class="logo">AI Prediction System</div>
 
-    <div class="progress">
-        <div class="progress-bar" id="bar"></div>
+    <div class="status" id="statusText">Đang khởi tạo hệ thống AI...</div>
+
+    <div class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="promo" id="promo">
+        Tăng tỷ lệ chiến thắng lên tới <b>80–95%</b> khi đăng ký tài khoản mới
     </div>
 
-    <div id="done">✔ HOÀN TẤT</div>
+    <div class="badges" id="badges">
+        <div class="badge">AI Engine</div>
+        <div class="badge">RNG Verified</div>
+        <div class="badge">Fintech Secured</div>
+    </div>
+
+    <div class="btn" id="cta">Đăng ký ngay</div>
 </div>
 
 <script>
-/* ===== CONFIG ===== */
-const TEXT = "CHƯƠNG TRÌNH KÍCH NỔ HŨ ĐANG ĐƯỢC BẮT ĐẦU...";
-const REDIRECT_URL = "https://m.fly88e.vip/?id=408666291";
-const TYPE_SPEED = 55;
-const DONE_DELAY = 1500;
+const REDIRECT_URL = "https://m.fly88e.vip/home/register?id=408666291";
 
-/* ===== ELEMENT ===== */
-const typingEl = document.getElementById("typing");
-const barEl = document.getElementById("bar");
-const doneEl = document.getElementById("done");
+let progress = 0;
+const bar = document.getElementById("bar");
+const promo = document.getElementById("promo");
+const badges = document.getElementById("badges");
+const cta = document.getElementById("cta");
+const statusText = document.getElementById("statusText");
 
-/* ===== TYPING ===== */
-let index = 0;
+const timer = setInterval(()=>{
+    progress += 2;
+    bar.style.width = progress + "%";
 
-const typeInterval = setInterval(() => {
-    typingEl.textContent += TEXT[index];
-    index++;
-
-    // progress theo chữ
-    barEl.style.width = Math.floor((index / TEXT.length) * 100) + "%";
-
-    if (index >= TEXT.length) {
-        clearInterval(typeInterval);
-
-        // đảm bảo progress đầy 100%
-        barEl.style.width = "100%";
-
-        // ⏱️ CHỜ 1.5s SAU KHI GÕ XONG
-        setTimeout(() => {
-            doneEl.classList.add("show");
-
-            // redirect sau khi hoàn tất
-            setTimeout(() => {
-                window.location.replace(REDIRECT_URL);
-            }, 1200);
-
-        }, DONE_DELAY);
+    if(progress >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{
+            statusText.textContent = "Hệ thống AI đã sẵn sàng";
+            promo.style.opacity = 1;
+            setTimeout(()=>{
+                badges.style.opacity = 1;
+                setTimeout(()=>{
+                    cta.style.opacity = 1;
+                }, 300);
+            }, 300);
+        }, 300);
     }
-}, TYPE_SPEED);
+}, 55);
+
+cta.onclick = ()=>window.location.replace(REDIRECT_URL);
 </script>
 
 </body>
